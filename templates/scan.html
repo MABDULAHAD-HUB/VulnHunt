@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}New Security Scan - VulnHunter{% endblock %}
+
+{% block content %}
+<div class="page-header text-center mb-4">
+    <h1 class="h2 fw-bold">New Scan</h1>
+    <p class="text-muted">Enter URL to scan for vulnerabilities</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="h5 mb-0">Configuration</h3>
+            </div>
+            <div class="card-body p-4">
+                <form id="scanForm">
+                    <!-- Premium Target URL Input -->
+                    <div class="mb-5">
+                        <label for="targetUrl" class="form-label fw-bold fs-5 mb-3">
+                            <i class="bi bi-bullseye me-2 text-primary"></i>Target URL
+                        </label>
+                        <div class="input-group input-group-lg shadow-sm">
+                            <span class="input-group-text bg-primary text-white border-0">
+                                <i class="bi bi-globe2 fs-5"></i>
+                            </span>
+                            <input type="url" class="form-control border-0 ps-3" id="targetUrl" name="url" 
+                                   placeholder="https://example.com" required
+                                   style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); font-size: 1.1rem;">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="bi bi-shield-check text-success"></i>
+                            </span>
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Enter the complete URL including protocol (http:// or https://)
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Scan Type</label>
+                            <select class="form-select" name="scan_type">
+                                <option value="comprehensive" selected>Comprehensive</option>
+                                <option value="enhanced">Enhanced</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="maxDepth" class="form-label">Depth</label>
+                            <select class="form-select" id="maxDepth" name="max_depth">
+                                <option value="1">Shallow</option>
+                                <option value="2" selected>Medium</option>
+                                <option value="3">Deep</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="delay" class="form-label">Speed</label>
+                            <select class="form-select" id="delay" name="delay">
+                                <option value="0.5">Fast</option>
+                                <option value="1.0" selected>Normal</option>
+                                <option value="2.0">Slow</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+
+
+
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg" id="startScanBtn">
+                            Start Scan
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            Back
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Fill URL helper function
+function fillURL(url) {
+    document.getElementById('targetUrl').value = url;
+    updateEstimatedTime();
+}
+
+// Update estimated time based on settings
+function updateEstimatedTime() {
+    const depth = parseInt(document.getElementById('maxDepth').value);
+    const delay = parseFloat(document.getElementById('delay').value);
+    
+    let baseTime = 2; // Base time in minutes
+    if (depth === 1) baseTime = 1;
+    if (depth === 3) baseTime = 4;
+    
+    const multiplier = delay / 1.0; // Normal speed baseline
+    const estimatedMin = Math.ceil(baseTime * multiplier);
+    const estimatedMax = Math.ceil(estimatedMin * 1.8);
+    
+    document.getElementById('estimatedTime').innerHTML = 
+        `Based on your settings: <strong>${estimatedMin}-${estimatedMax} minutes</strong>`;
+}
+
+// Update time when settings change
+document.getElementById('maxDepth').addEventListener('change', updateEstimatedTime);
+document.getElementById('delay').addEventListener('change', updateEstimatedTime);
+
+// Form submission handler
+document.getElementById('scanForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const startBtn = document.getElementById('startScanBtn');
+    const originalText = startBtn.innerHTML;
+    
+    // Disable button and show loading
+    startBtn.disabled = true;
+    startBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Initializing Scan...';
+    
+    // Get form data
+    const formData = new FormData(this);
+    const scanData = {
+        url: formData.get('url'),
+        scan_type: formData.get('scan_type'),
+        max_depth: parseInt(formData.get('max_depth')),
+        delay: parseFloat(formData.get('delay'))
+    };
+    
+    try {
+        const response = await fetch('/start_scan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(scanData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message briefly
+            startBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Scan Started!';
+            
+            // Redirect to scan status page
+            setTimeout(() => {
+                window.location.href = '/scan/status/' + result.scan_id;
+            }, 1000);
+        } else {
+            throw new Error(result.error || 'Unknown error occurred');
+        }
+    } catch (error) {
+
+        
+        // Show error message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+        alertDiv.innerHTML = `
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Scan Failed:</strong> ${error.message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insert alert before form
+        this.parentNode.insertBefore(alertDiv, this);
+        
+        // Reset button
+        startBtn.disabled = false;
+        startBtn.innerHTML = originalText;
+    }
+});
+
+// Auto-fill URL from hash fragment or query parameter
+window.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashUrl = window.location.hash ? decodeURIComponent(window.location.hash.substring(1)) : '';
+    const paramUrl = urlParams.get('url');
+    
+    if (paramUrl && paramUrl.startsWith('http')) {
+        document.getElementById('targetUrl').value = paramUrl;
+    } else if (hashUrl && hashUrl.startsWith('http')) {
+        document.getElementById('targetUrl').value = hashUrl;
+    }
+    
+    updateEstimatedTime();
+});
+
+// Real-time URL validation
+document.getElementById('targetUrl').addEventListener('input', function(e) {
+    const url = e.target.value;
+    const isValid = url.match(/^https?:\/\/.+/);
+    
+    if (url && !isValid) {
+        e.target.classList.add('is-invalid');
+    } else {
+        e.target.classList.remove('is-invalid');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}Scan History - VulnHunter{% endblock %}
+
+{% block content %}
+<!-- Premium Page Header -->
+<div class="premium-header text-center mb-4">
+    <div class="header-content">
+        <h1 class="h5 gradient-text mb-2">Scan History</h1>
+        <p class="text-muted mb-3" style="font-size: 0.75rem;">Security assessment history</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header premium-gradient-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h3 class="h6 fw-bold mb-0 text-white">
+                            Scan History
+                        </h3>
+                        <small class="text-white-50" style="font-size: 0.75rem;">Previous security scans</small>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ url_for('scan_page') }}" class="btn btn-premium" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                            Launch New Scan
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if scans %}
+                <!-- Professional Statistics -->
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stats-card bg-primary bg-gradient text-white">
+                            <div class="stats-content">
+                                <div class="stats-number" style="font-size: 1.2rem;">{{ scans|length }}</div>
+                                <div class="stats-label" style="font-size: 0.7rem;">Total Scans</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stats-card bg-success bg-gradient text-white">
+                            <div class="stats-content">
+                                {% set completed_scans = scans|selectattr('status', 'equalto', 'completed')|list|length %}
+                                <div class="stats-number" style="font-size: 1.2rem;">{{ completed_scans }}</div>
+                                <div class="stats-label" style="font-size: 0.7rem;">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stats-card bg-warning bg-gradient text-white">
+                            <div class="stats-content">
+                                {% set total_vulns = scans|sum(attribute='total_vulnerabilities', start=0) %}
+                                <div class="stats-number" style="font-size: 1.2rem;">{{ total_vulns or 0 }}</div>
+                                <div class="stats-label" style="font-size: 0.7rem;">Vulnerabilities</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stats-card bg-info bg-gradient text-white">
+                            <div class="stats-content">
+                                <div class="stats-number" style="font-size: 1.2rem;">{{ scans|length if scans else '0' }}</div>
+                                <div class="stats-label" style="font-size: 0.7rem;">Recent Scans</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Professional Table -->
+                <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 premium-table">
+                        <thead class="premium-table-header">
+                            <tr>
+                                <th class="fw-bold ps-4">
+                                    Scan Details
+                                </th>
+                                <th class="fw-bold">
+                                    Target URL
+                                </th>
+                                <th class="fw-bold text-center">
+                                    Findings
+                                </th>
+                                <th class="fw-bold text-center">
+                                    Risk Level
+                                </th>
+                                <th class="fw-bold text-center">
+                                    Date
+                                </th>
+                                <th >
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for scan in scans %}
+                            <tr class="border-bottom">
+                                <td class="ps-4">
+                                    <div>
+                                        <div >{{ scan.scan_type|title }} Scan</div>
+                                        <code class="small text-muted">{{ scan.scan_id[:8] }}...</code>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{{ scan.target_url }}" target="_blank" class="text-decoration-none fw-medium">
+                                        {{ scan.target_url|truncate(45) }}
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    {% if scan.total_vulnerabilities > 0 %}
+                                    <span class="badge bg-danger fs-6 px-3 py-2">{{ scan.total_vulnerabilities }}</span>
+                                    {% else %}
+                                    <span class="badge bg-success fs-6 px-3 py-2">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if scan.total_vulnerabilities > 0 %}
+                                    <span class="badge bg-warning">{{ scan.total_vulnerabilities }} issues</span>
+                                    {% else %}
+                                    <span class="badge bg-success">No issues</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="text-muted small">{{ scan.scan_completed }}</div>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        {% if scan.status == 'completed' %}
+                                        <a href="{{ url_for('results_page', scan_id=scan.scan_id) }}" 
+                                           class="btn btn-outline-primary btn-sm" title="View Results">
+                                            Results
+                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <a href="/report/{{ scan.scan_id }}" target="_blank"
+                                               class="btn btn-outline-secondary btn-sm" title="View Report">
+                                                View
+                                            </a>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" 
+                                                    data-bs-toggle="dropdown" title="Download Report">
+                                                <span class="visually-hidden">Toggle Dropdown</span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="/api/scan/{{ scan.scan_id }}/report/pdf">
+                                                    PDF Report
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="/api/scan/{{ scan.scan_id }}/report/word">
+                                                    Word Report
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="/api/scan/{{ scan.scan_id }}/report/html">
+                                                    HTML Report
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="/api/scan/{{ scan.scan_id }}/report/json">
+                                                    JSON Data
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                        {% elif scan.status == 'running' %}
+                                        <a href="{{ url_for('scan_status_page', scan_id=scan.scan_id) }}" 
+                                           class="btn btn-outline-info btn-sm" title="View Progress">
+                                            Progress
+                                        </a>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ scan.status|title }}</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+                {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-4">
+                    <h5 class="fw-semibold mb-2">No Scan History Yet</h5>
+                    <p class="text-muted mb-3" style="font-size: 0.85rem;">
+                        You haven't performed any security scans yet. Start by running your first OWASP Top 10 vulnerability assessment.
+                    </p>
+                    <a href="{{ url_for('scan_page') }}" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
+                        Launch First Scan
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if scans %}
+<!-- Statistics Summary -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="h6 fw-semibold mb-0" style="font-size: 0.9rem;">
+                    Scan Statistics
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="text-center">
+                            <div class="fw-bold text-primary mb-1" style="font-size: 1.2rem;">{{ scans|length }}</div>
+                            <div class="text-muted" style="font-size: 0.7rem;">Total Scans</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="text-center">
+                            <div class="fw-bold text-success mb-1" style="font-size: 1.2rem;">{{ scans|selectattr('status', 'equalto', 'completed')|list|length }}</div>
+                            <div class="text-muted" style="font-size: 0.7rem;">Completed</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="text-center">
+                            {% set total_vulns = scans|sum(attribute='total_vulnerabilities')|default(0) %}
+                            <div class="fw-bold {% if total_vulns > 0 %}text-danger{% else %}text-success{% endif %} mb-1" style="font-size: 1.2rem;">{{ total_vulns }}</div>
+                            <div class="text-muted" style="font-size: 0.7rem;">Total Findings</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="text-center">
+                            {% set unique_targets = scans|map(attribute='target_url')|unique|list|length %}
+                            <div class="fw-bold text-info mb-1" style="font-size: 1.2rem;">{{ unique_targets }}</div>
+                            <div class="text-muted" style="font-size: 0.7rem;">Unique Targets</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <a href="{{ url_for('scan_page') }}" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                New Security Scan
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block head %}
+<style>
+/* Professional Statistics Cards */
+.stats-card {
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+
+
+.stats-number {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 0.15rem;
+}
+
+.stats-label {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    font-weight: 500;
+}
+
+/* Premium Table Styling */
+.premium-table {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.premium-table-header {
+    background: linear-gradient(135deg, var(--primary) 0%, #6c5ce7 100%);
+    color: white;
+    border: none;
+}
+
+.premium-table-header th {
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.025em;
+}
+
+.premium-table tbody tr {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.premium-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.03) 0%, rgba(74, 144, 226, 0.03) 100%);
+    transform: translateX(5px);
+}
+
+.premium-table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border: none;
+}
+
+/* Professional Empty State */
+
+/* Enhanced Cards */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.95);
+}
+
+.premium-gradient-header {
+    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 50%, #06b6d4 100%);
+    border: none;
+    padding: 1.5rem;
+    color: white;
+}
+
+/* Professional Action Buttons */
+.btn-premium {
+    background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-premium:hover::before {
+    left: 100%;
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(108, 92, 231, 0.4);
+    color: white;
+}
+
+/* Premium Badge Styles */
+.badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.025em;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .stats-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-number {
+        font-size: 1.5rem;
+    }
+    
+    .premium-table-header th {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .premium-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const runningScans = document.querySelectorAll('[title="View Progress"]');
+    if (runningScans.length > 0) {
+        setInterval(() => {
+            window.location.reload();
+        }, 30000);
+    }
+});
+
+document.querySelectorAll('tr[data-scan-id]').forEach(row => {
+    row.addEventListener('click', function(e) {
+        if (!e.target.closest('a, button')) {
+            const viewButton = this.querySelector('[title="View Results"]');
+            if (viewButton) {
+                viewButton.click();
+            }
+        }
+    });
+    
+    row.style.cursor = 'pointer';
+});
+</script>
+{% endblock %}

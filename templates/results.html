@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Results - VulnHunter{% endblock %}
+
+{% block content %}
+<!-- Premium Results Header -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card card-premium position-relative overflow-hidden">
+
+            <div class="card-header bg-gradient position-relative" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%);">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="h3 fw-bold mb-2 text-white d-flex align-items-center">
+                            Scan Complete
+                        </h2>
+                        <p class="text-white-50 mb-0 fs-5">OWASP Top 10 Vulnerability Analysis</p>
+                    </div>
+                    <div class="col-auto">
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-primary fs-6 px-3 py-2">{{ results.scan_type|title }}</span>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Generate Report
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="/report/{{ scan_id }}" target="_blank">
+                                        View HTML Report
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Download Reports</h6></li>
+                                    <li><a class="dropdown-item" href="/api/scan/{{ scan_id }}/report/pdf">
+                                        Download PDF Report
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/api/scan/{{ scan_id }}/report/word">
+                                        Download Word Report
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="/api/scan/{{ scan_id }}/report/html">
+                                        Download HTML Report
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <div class="text-muted small fw-medium">Target URL</div>
+                                <a href="{{ results.target_url }}" target="_blank" rel="noopener" class="text-decoration-none fw-semibold text-truncate d-block" style="max-width: 200px;">
+                                    {{ results.target_url }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <div class="text-muted small fw-medium">Completed</div>
+                                <div class="fw-semibold">{{ results.scan_completed }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <div class="text-muted small fw-medium">Scan ID</div>
+                                <code class="bg-light p-2 rounded fw-semibold small">{{ scan_id[:8] }}...</code>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <div class="text-muted small fw-medium">Total Findings</div>
+                                <span class="fs-4 fw-bold text-danger">{{ results.total_vulnerabilities }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if results.total_vulnerabilities > 0 %}
+<!-- Severity Overview -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center h-100 border-0 card-premium position-relative overflow-hidden">
+            <div class="card-body p-4">
+                <div class="mb-3"></div>
+                <h2 class="display-5 fw-bold text-danger mb-2 position-relative">
+                    <span class="pulse">{{ results.severity_counts.Critical|default(0) }}</span>
+                </h2>
+                <h5 class="fw-bold mb-2 text-danger">Critical</h5>
+                <small class="text-muted fw-medium">CVSS 9.0 - 10.0 • Immediate Action</small>
+                <div class="mt-2">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-danger" data-width="{{ results.severity_counts.Critical|default(0) }}" data-total="{{ results.total_vulnerabilities }}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="mb-3"></div>
+                <h2 class="display-6 fw-bold text-warning mb-1">{{ results.severity_counts.High|default(0) }}</h2>
+                <h6 class="fw-semibold mb-1">High</h6>
+                <small class="text-muted">CVSS 7.0 - 8.9</small>
+                <div class="mt-2">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-warning" data-width="{{ results.severity_counts.High|default(0) }}" data-total="{{ results.total_vulnerabilities }}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="mb-3"></div>
+                <h2 class="display-6 fw-bold text-info mb-1">{{ results.severity_counts.Medium|default(0) }}</h2>
+                <h6 class="fw-semibold mb-1">Medium</h6>
+                <small class="text-muted">CVSS 4.0 - 6.9</small>
+                <div class="mt-2">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-info" data-width="{{ results.severity_counts.Medium|default(0) }}" data-total="{{ results.total_vulnerabilities }}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="mb-3"></div>
+                <h2 class="display-6 fw-bold text-success mb-1">{{ results.severity_counts.Low|default(0) }}</h2>
+                <h6 class="fw-semibold mb-1">Low</h6>
+                <small class="text-muted">CVSS 0.1 - 3.9</small>
+                <div class="mt-2">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" data-width="{{ results.severity_counts.Low|default(0) }}" data-total="{{ results.total_vulnerabilities }}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vulnerability Details -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    </h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="expandAll()">
+                            Expand All
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="collapseAll()">
+                            Collapse All
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="accordion accordion-flush" id="vulnerabilityAccordion">
+                    {% for vulnerability in results.vulnerabilities %}
+                    <div class="accordion-item border-0 border-bottom">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed p-4 border-0 position-relative" type="button" data-bs-toggle="collapse" data-bs-target="#vuln-{{ loop.index }}" aria-expanded="false"
+                                    style="background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%); backdrop-filter: blur(10px);">
+                                <div class="d-flex w-100 justify-content-between align-items-center me-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-4">
+                                            {% set severity = vulnerability.severity %}
+                                            {% if severity == 'Critical' %}
+                                                <span class="badge fs-6 px-4 py-2 position-relative overflow-hidden" 
+                                                      style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                                                    {{ severity }}
+                                                </span>
+                                            {% elif severity == 'High' %}
+                                                <span class="badge fs-6 px-4 py-2 position-relative overflow-hidden" 
+                                                      style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                                                    {{ severity }}
+                                                </span>
+                                            {% elif severity == 'Medium' %}
+                                                <span class="badge fs-6 px-4 py-2 position-relative overflow-hidden" 
+                                                      style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);">
+                                                    {{ severity }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge fs-6 px-4 py-2 position-relative overflow-hidden" 
+                                                      style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                                                    {{ severity }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-semibold mb-1">{{ vulnerability.type }}</h6>
+                                            <p class="text-muted small mb-0">{{ vulnerability.owasp_category|default(vulnerability.category) }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-3 align-items-center">
+                                        {% if vulnerability.cvss_score %}
+                                        <div class="text-center">
+                                            <div class="fw-bold {% if vulnerability.cvss_score >= 9 %}text-danger{% elif vulnerability.cvss_score >= 7 %}text-warning{% elif vulnerability.cvss_score >= 4 %}text-info{% else %}text-success{% endif %}">
+                                                {{ vulnerability.cvss_score }}
+                                            </div>
+                                            <small class="text-muted">CVSS</small>
+                                        </div>
+                                        {% endif %}
+                                        ▼
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="vuln-{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#vulnerabilityAccordion">
+                            <div class="accordion-body p-4 bg-light">
+                                <div class="row g-4">
+                                    <!-- Description -->
+                                    <div class="col-md-8">
+                                        <h6 class="fw-semibold mb-2">
+                                            Description
+                                        </h6>
+                                        <p class="mb-3">{{ vulnerability.description }}</p>
+                                        
+                                        {% if vulnerability.url %}
+                                        <h6 class="fw-semibold mb-2">
+                                            Location
+                                        </h6>
+                                        <a href="{{ vulnerability.url }}" target="_blank" class="text-decoration-none">
+                                            {{ vulnerability.url }}
+
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if vulnerability.payload %}
+                                        <h6 class="fw-semibold mb-2 mt-3">
+                                            Test Payload
+                                        </h6>
+                                        <code class="bg-dark text-light p-2 rounded d-block">{{ vulnerability.payload }}</code>
+                                        {% endif %}
+                                        
+                                        {% if vulnerability.parameter %}
+                                        <h6 class="fw-semibold mb-2 mt-3">
+                                            Vulnerable Parameter
+                                        </h6>
+                                        <code class="bg-warning bg-opacity-25 text-dark p-2 rounded">{{ vulnerability.parameter }}</code>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Sidebar Info -->
+                                    <div class="col-md-4">
+                                        {% if vulnerability.cvss_score %}
+                                        <div class="card border-0 mb-3">
+                                            <div class="card-body p-3">
+                                                <h6 class="fw-semibold mb-2">
+                                                    CVSS 3.1 Score
+                                                </h6>
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <div class="fs-3 fw-bold {% if vulnerability.cvss_score >= 9 %}text-danger{% elif vulnerability.cvss_score >= 7 %}text-warning{% elif vulnerability.cvss_score >= 4 %}text-info{% else %}text-success{% endif %} me-2">
+                                                        {{ vulnerability.cvss_score }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold">{{ vulnerability.severity }}</div>
+                                                        <small class="text-muted">Risk Level</small>
+                                                    </div>
+                                                </div>
+                                                {% if vulnerability.cvss_vector %}
+                                                <small class="text-muted d-block">{{ vulnerability.cvss_vector }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if vulnerability.impact %}
+                                        <div class="card border-0 mb-3 border-start border-warning border-3">
+                                            <div class="card-body p-3">
+                                                <h6 class="fw-semibold mb-2">
+                                                    Impact
+                                                </h6>
+                                                <p class="small mb-0">{{ vulnerability.impact }}</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if vulnerability.remediation %}
+                                        <div class="card border-0 border-start border-success border-3">
+                                            <div class="card-body p-3">
+                                                <h6 class="fw-semibold mb-2">
+                                                    Remediation
+                                                </h6>
+                                                <p class="small mb-0">{{ vulnerability.remediation }}</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- No Vulnerabilities Found -->
+<div class="row">
+    <div class="col-12">
+        <div class="card text-center">
+            <div class="card-body p-5">
+                <div class="mb-4">
+                    <h2 class="text-success fw-bold">✓</h2>
+                </div>
+                <h3 class="fw-bold text-success mb-3">No Critical Vulnerabilities Found!</h3>
+                <p class="text-muted mb-4">
+                    Great! No major vulnerabilities detected 
+                    on the target application. However, remember that security is an ongoing process.
+                </p>
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="alert alert-info">
+                            <h6 class="fw-semibold mb-2">
+                                Security Recommendations
+                            </h6>
+                            <ul class="list-unstyled mb-0 text-start">
+                                <li>• Continue regular security assessments</li>
+                                <li>• Keep all components up to date</li>
+                                <li>• Implement security monitoring</li>
+                                <li>• Follow secure coding practices</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Buttons -->
+<div class="row mt-5">
+    <div class="col-12 text-center">
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="/report/{{ scan_id }}" target="_blank" class="btn btn-success btn-lg">
+                View Full Report
+            </a>
+            <a href="{{ url_for('scan_page') }}" class="btn btn-primary btn-lg">
+                Run New Scan
+            </a>
+            <a href="{{ url_for('scan_history') }}" class="btn btn-outline-secondary btn-lg">
+                View History
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-lg">
+                Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function expandAll() {
+    document.querySelectorAll('.accordion-collapse').forEach(collapse => {
+        new bootstrap.Collapse(collapse, { show: true });
+    });
+}
+
+function collapseAll() {
+    document.querySelectorAll('.accordion-collapse.show').forEach(collapse => {
+        new bootstrap.Collapse(collapse, { hide: true });
+    });
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const criticalHighItems = document.querySelectorAll('.accordion-item');
+    let expanded = 0;
+    
+    criticalHighItems.forEach((item, index) => {
+        const badge = item.querySelector('.badge');
+        if (badge && (badge.textContent.includes('Critical') || badge.textContent.includes('High')) && expanded < 3) {
+            const collapse = item.querySelector('.accordion-collapse');
+            if (collapse) {
+                new bootstrap.Collapse(collapse, { show: true });
+                expanded++;
+            }
+        }
+    });
+});
+
+// Copy vulnerability details to clipboard
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed top-0 end-0 m-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ✓ Copied to clipboard!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 3000);
+    });
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
+        const width = parseInt(bar.getAttribute('data-width') || '0');
+        const total = parseInt(bar.getAttribute('data-total') || '0');
+        const percentage = total > 0 ? Math.round((width / total) * 100) : 0;
+        bar.style.width = percentage + '%';
+    });
+});
+</script>
+{% endblock %}
