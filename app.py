@@ -424,7 +424,7 @@ def about():
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist
     os.makedirs('templates', exist_ok=True)
-    os.makedirs('static/css', exist_ok=True)
-    os.makedirs('static/js', exist_ok=True)
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Get port from environment variable for Heroku deployment
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)

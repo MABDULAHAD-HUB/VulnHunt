@@ -1,0 +1,38 @@
+{
+  "name": "VulnHunt",
+  "description": "Advanced web vulnerability scanner with complete OWASP Top 10 2021 coverage. Real-time scanning and professional reporting.",
+  "repository": "https://github.com/MABDULAHAD-HUB/VulnHunt",
+  "logo": "https://via.placeholder.com/200x200/667eea/ffffff?text=VH",
+  "keywords": [
+    "vulnerability-scanner",
+    "owasp-top-10", 
+    "web-security",
+    "penetration-testing",
+    "security-assessment",
+    "python",
+    "flask"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "production"
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for Flask sessions",
+      "generator": "secret"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "addons": [],
+  "stack": "heroku-22"
+}

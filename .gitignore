@@ -1,0 +1,27 @@
+# Heroku Deployment Files
+Procfile
+runtime.txt
+
+# Local Environment
+.env
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated Reports (don't deploy sample reports)
+sample_*.pdf
+sample_*.docx
+sample_*.html
+sample_*.json
