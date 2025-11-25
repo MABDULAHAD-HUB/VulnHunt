@@ -35,24 +35,7 @@ This comprehensive security scanner provides automated detection of the most cri
 - **Session Management** - Persistent HTTP sessions for authenticated testing
 - **Comprehensive Reporting** - Detailed findings with evidence and remediation guidance
 
-### 📊 Professional Report Generation
 
-- **Executive Summary** - High-level risk assessment and key findings
-- **PDF Reports** - Professional, printable documents suitable for executives and compliance
-- **Word Documents** - Editable reports for collaborative review and annotation
-- **HTML Reports** - Interactive web-based reports with modern styling
-- **Machine-readable JSON** - Structured data export for integration and automation
-- **Risk Matrix Analysis** - CVSS-based risk scoring and prioritization
-- **Remediation Guidance** - Actionable recommendations with timelines
-- **OWASP Coverage Report** - Complete Top 10 assessment breakdown
-
-### 🎨 Modern Web Interface
-
-- **Clean Design** - Minimalist, professional interface without clutter
-- **Real-time Progress** - Live scan status updates and progress tracking
-- **Responsive Layout** - Works seamlessly on desktop, tablet, and mobile
-- **Scan Management** - Easy configuration and history management
-- **Export Functionality** - Download detailed vulnerability reports
 
 ## 🔧 Quick Start
 
@@ -64,8 +47,8 @@ This comprehensive security scanner provides automated detection of the most cri
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
-   cd web_vuln_scanner
+   git clone https://github.com/MABDULAHAD-HUB/VulnHunt.git
+   cd VulnHunt
    ```
 
 2. **Install dependencies:**
@@ -93,31 +76,6 @@ This comprehensive security scanner provides automated detection of the most cri
 4. **Review Results** - Detailed vulnerability reports with CVSS scores
 5. **Scan History** - Manage and review previous assessments
 
-### Scan Configuration
-
-- **Target URL**: Enter the web application URL to test
-- **Scan Type**: 
-  - Comprehensive (Full OWASP Top 10)
-  - Enhanced (Extended vulnerability checks)
-- **Crawl Depth**: Shallow/Medium/Deep URL discovery
-- **Speed Settings**: Fast/Normal/Slow (respectful to target systems)
-
-### Report Generation
-
-After completing a scan, generate comprehensive security reports in multiple formats:
-
-- **PDF Reports**: Professional, printable documents with executive summaries, detailed findings, and remediation guidance
-- **Word Documents**: Editable Microsoft Word format for collaborative review, annotation, and customization
-- **HTML Reports**: Interactive web-based reports with modern styling and responsive design
-- **JSON Export**: Machine-readable structured data for integration with security tools and workflows
-
-### API Endpoints for Report Generation
-
-- `/report/<scan_id>` - View interactive HTML report in browser
-- `/api/scan/<scan_id>/report/pdf` - Download professional PDF report
-- `/api/scan/<scan_id>/report/word` - Download editable Word document
-- `/api/scan/<scan_id>/report/html` - Download HTML report file
-- `/api/scan/<scan_id>/report/json` - Download JSON data export
 
 ### Installation Requirements
 
@@ -130,7 +88,6 @@ pip install reportlab
 # For Word document generation  
 pip install python-docx
 
-# Note: Using reportlab instead of weasyprint for better Windows compatibility
 ```
 
 ### Severity Classification
