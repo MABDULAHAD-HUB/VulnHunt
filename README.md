@@ -7,6 +7,17 @@ A professional web application for comprehensive OWASP Top 10 2021 vulnerability
 ![Flask](https://img.shields.io/badge/flask-2.0+-red.svg)
 ![License](https://img.shields.io/badge/license-Educational-yellow.svg)
 
+## 📸 Screenshots
+
+### Home Page
+![Home](home.png)
+
+### Scan Page
+![Scan](scan.png)
+
+### Results Page
+![Result](result.png)
+
 ## 🛡️ Overview
 
 This comprehensive security scanner provides automated detection of the most critical web application vulnerabilities as defined by the **OWASP Top 10 2021**. Built with Flask and featuring a clean, minimalist web interface with real-time progress tracking and professional reporting.
